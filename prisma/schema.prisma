@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Admin {
+  id            Int               @id @default(autoincrement())
+  name          String
+  username      String            @unique
+  password_hash String
+  role          String            @default("checker") // superadmin, checker
+  status        String            @default("ACTIVE")  // ACTIVE, INACTIVE
+  created_at    DateTime          @default(now())
+  updated_at    DateTime          @updatedAt
+  logs          ActivityLog[]
+  permissions   AdminPermission[]
+
+  @@map("admins")
+}
+
+model Visitor {
+  id              Int       @id @default(autoincrement())
+  uuid            String    @unique @default(uuid())
+  unique_code     String    @unique
+  full_name       String
+  gender          String    @default("")
+  birth_date      String    @default("")
+  age             Int       @default(0)
+  address         String    @default("")
+  qr_token        String    @unique
+  // Legacy fields kept for backward compatibility
+  qr_code         String    @unique
+  name            String
+  nik             String    @unique
+  phone           String    @default("-")
+  email           String?
+  institution     String?
+  status          String    @default("REGISTERED") // REGISTERED, CHECKED_IN, BLACKLISTED
+  signature       String?   // Digital signature for QR verification
+  checked_in_at   DateTime?
+  additional_data String?   @db.Text
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@map("visitors")
+}
+
+model Permission {
+  id     Int               @id @default(autoincrement())
+  name   String
+  slug   String            @unique // dashboard, scanner, visitor, export, setting, admin
+  admins AdminPermission[]
+
+  @@map("permissions")
+}
+
+model AdminPermission {
+  id            Int        @id @default(autoincrement())
+  admin_id      Int
+  permission_id Int
+  admin         Admin      @relation(fields: [admin_id], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@map("admin_permissions")
+}
+
+model ActivityLog {
+  id         Int      @id @default(autoincrement())
+  admin_id   Int?
+  admin      Admin?   @relation(fields: [admin_id], references: [id], onDelete: SetNull)
+  activity   String   @db.Text
+  ip_address String?
+  created_at DateTime @default(now())
+
+  @@map("activity_logs")
+}
+
+model SystemSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique // e.g., "event", "qr", "scanner", "theme", "typography", "seo", "announcement", "popup", "hero"
+  value String @db.Text // JSON string representing the setting details
+
+  @@map("system_settings")
+}
+
+model CustomSection {
+  id         Int     @id @default(autoincrement())
+  name       String  // e.g., "Hero", "Tentang", "Rundown", "Guest Star", "Sponsor", "FAQ", "Lokasi", "Footer"
+  slug       String  @unique // unique identifier
+  order      Int     @default(0)
+  isVisible  Boolean @default(true)
+  content    String  @db.Text // JSON string representing customizable section content
+
+  @@map("custom_sections")
+}
+
+model FormField {
+  id          Int     @id @default(autoincrement())
+  label       String
+  fieldName   String  @unique // e.g. "pekerjaan", "whatsapp"
+  fieldType   String  // "text", "number", "select", "date", "textarea"
+  required    Boolean @default(false)
+  placeholder String?
+  options     String? // Comma-separated options for select type
+  order       Int     @default(0)
+
+  @@map("form_fields")
+}
+
+model Upload {
+  id        Int      @id @default(autoincrement())
+  fileName  String
+  fileUrl   String   @db.VarChar(512)
+  fileType  String
+  fileSize  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("uploads")
+}
+
+model Blacklist {
+  id        Int      @id @default(autoincrement())
+  type      String   // "CODE", "NAME"
+  value     String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@map("blacklist")
+}

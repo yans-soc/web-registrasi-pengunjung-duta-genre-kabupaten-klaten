@@ -1,0 +1,282 @@
+WEB REGISTRASI PENGUNJUNG – MALAM PUNCAK DUTA GENRE 2026
+
+Tujuan
+
+Membangun aplikasi web registrasi pengunjung berbasis QR Code tanpa
+login untuk pengunjung, dengan dashboard admin yang memiliki dua role
+(Super Admin dan Checker).
+
+------------------------------------------------------------------------
+
+TECH STACK
+
+Frontend - Next.js 15 (App Router) - TypeScript - Tailwind CSS -
+shadcn/ui
+
+Backend - Next.js Route Handlers (API)
+
+Database - MySQL
+
+ORM - Prisma
+
+Authentication Admin - JWT + HTTP Only Cookie
+
+QR - Generate: qrcode - Scanner: html5-qrcode
+
+------------------------------------------------------------------------
+
+ROLE
+
+Super Admin
+
+Akses: - Dashboard - Data Pengunjung - Scanner QR - Verifikasi Manual -
+Statistik - Export Excel - Manajemen Admin - Hak Akses Admin -
+Pengaturan - Activity Log
+
+Checker
+
+Akses: - Scanner QR saja
+
+Saat login Checker langsung diarahkan ke: /admin/scanner
+
+------------------------------------------------------------------------
+
+FLOW PENGUNJUNG
+
+1.  Homepage
+2.  Klik Daftar
+3.  Isi Form:
+    -   Nama Lengkap
+    -   Jenis Kelamin
+    -   Tanggal Lahir
+    -   Umur (otomatis dari tanggal lahir)
+    -   Alamat Lengkap
+4.  Submit
+5.  Sistem menyimpan data
+6.  Generate QR Code + Unique Code
+7.  Tampilkan halaman QR
+8.  User download / screenshot QR
+9.  Datang ke venue
+10. Checker scan QR
+11. Status berubah menjadi CHECKED IN
+
+Tanpa login.
+
+------------------------------------------------------------------------
+
+FITUR AMBIL ULANG QR
+
+Menu: “Saya Sudah Daftar”
+
+Input: - Nama Lengkap - Tanggal Lahir
+
+Jika data ditemukan: QR ditampilkan kembali.
+
+------------------------------------------------------------------------
+
+FLOW ADMIN
+
+Login ↓ Cek Role
+
+Jika Super Admin → Dashboard
+
+Jika Checker → Scanner QR
+
+------------------------------------------------------------------------
+
+DASHBOARD SUPER ADMIN
+
+Menu: - Dashboard - Pengunjung - Scanner QR - Laporan - Manajemen
+Admin - Pengaturan - Logout
+
+Dashboard menampilkan: - Total Registrasi - Sudah Check In - Belum
+Hadir - Checker Aktif
+
+------------------------------------------------------------------------
+
+DASHBOARD CHECKER
+
+Menu: - Scanner QR - Logout
+
+------------------------------------------------------------------------
+
+FORM REGISTRASI
+
+Field: - Nama Lengkap - Jenis Kelamin - Tanggal Lahir - Umur (readonly
+otomatis) - Alamat Lengkap
+
+Button: Daftar
+
+------------------------------------------------------------------------
+
+HALAMAN QR
+
+Menampilkan: - Nama - Unique Code - QR Code - Tombol Download QR
+
+QR payload: - visitor_id - unique_code - signature
+
+Gunakan signature agar QR tidak mudah dipalsukan.
+
+------------------------------------------------------------------------
+
+SCANNER
+
+Menggunakan kamera.
+
+Jika valid: - tampilkan nama - tampilkan jam - status CHECK IN - simpan
+waktu checkin - otomatis kembali scan
+
+Jika sudah pernah check in: Tampilkan: “QR SUDAH DIGUNAKAN”
+
+------------------------------------------------------------------------
+
+VERIFIKASI MANUAL
+
+Input: Unique Code
+
+Jika valid: Status menjadi CHECKED IN.
+
+------------------------------------------------------------------------
+
+MANAJEMEN ADMIN
+
+Super Admin dapat: - Tambah Admin - Edit Admin - Hapus Admin -
+Nonaktifkan Admin - Reset Password - Atur Hak Akses
+
+Role: - superadmin - checker
+
+Walaupun role hanya dua, permission disimpan terpisah agar mudah
+dikembangkan.
+
+------------------------------------------------------------------------
+
+DATABASE
+
+visitors
+
+-   id
+-   uuid
+-   unique_code
+-   full_name
+-   gender
+-   birth_date
+-   age
+-   address
+-   qr_token
+-   status
+-   checkin_time
+-   created_at
+-   updated_at
+
+admins
+
+-   id
+-   name
+-   username
+-   password_hash
+-   role
+-   status
+-   created_at
+-   updated_at
+
+permissions
+
+-   id
+-   name
+-   slug
+
+Permission awal: - dashboard - scanner - visitor - export - setting -
+admin
+
+admin_permissions
+
+-   id
+-   admin_id
+-   permission_id
+
+activity_logs
+
+-   id
+-   admin_id
+-   activity
+-   ip_address
+-   created_at
+
+------------------------------------------------------------------------
+
+PUBLIC ROUTE
+
+/ Landing
+
+/daftar Registrasi
+
+/qr QR berhasil
+
+/cek-qr Ambil ulang QR
+
+------------------------------------------------------------------------
+
+ADMIN ROUTE
+
+/admin/login
+
+/admin/dashboard
+
+/admin/scanner
+
+/admin/visitors
+
+/admin/admins
+
+/admin/settings
+
+------------------------------------------------------------------------
+
+UI/UX
+
+Style: - Modern Event - Glassmorphism ringan - Clean - Responsive -
+Mobile First - Rounded 2xl - Shadow lembut - Animasi halus
+
+Komponen shadcn/ui: - Card - Button - Input - Select - Radio Group -
+Textarea - Dialog - Drawer - Badge - Table - Dropdown Menu - Sheet -
+Toast - Skeleton - Pagination - Tooltip
+
+------------------------------------------------------------------------
+
+WARNA
+
+Primary: Orange (#EA580C)
+
+Secondary: Red (#DC2626)
+
+Accent: Gold (#FACC15)
+
+Background: #FFF8F2
+
+Success: #16A34A
+
+Danger: #DC2626
+
+Text: #111827
+
+------------------------------------------------------------------------
+
+SECURITY
+
+-   JWT Authentication Admin
+-   HTTP Only Cookie
+-   Middleware proteksi admin
+-   Role Based Access Control
+-   Permission Based Access
+-   QR Signature
+-   Validasi server saat scan
+-   QR hanya bisa digunakan satu kali
+
+------------------------------------------------------------------------
+
+DEVELOPMENT TARGET
+
+Buat aplikasi production-ready dengan: - Clean Architecture - Reusable
+Components - Responsive UI - TypeScript strict mode - Prisma ORM -
+Optimized performance - Mudah di-deploy - Code mudah dikembangkan untuk
+event berikutnya.
