@@ -33,4 +33,8 @@ npx dotenv-cli -e .env.production -- npm run build
 echo "[6] Restarting PM2 process..."
 pm2 startOrReload ecosystem.config.js --only $APP_NAME
 
+# 7. Reload Nginx configuration
+echo "[7] Reloading Nginx..."
+systemctl reload nginx || true
+
 echo "===== Deploy to PRODUCTION complete ====="
