@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
+// Environment detection
+const APP_ENV = process.env.APP_ENV || "development";
+const IS_PRODUCTION = APP_ENV === "production";
+const IS_STAGING = APP_ENV === "staging";
+
 // IMPORTANT: Must match the secret used in src/lib/jwt.ts
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "klaten-duta-genre-super-secret-key-2026"

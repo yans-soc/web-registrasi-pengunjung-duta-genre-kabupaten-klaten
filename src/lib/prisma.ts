@@ -8,12 +8,23 @@ let prismaInstance: PrismaClient;
 if (globalForPrisma.prisma) {
   prismaInstance = globalForPrisma.prisma;
 } else {
+  const appEnv = process.env.APP_ENV || "development";
   const factory = new PrismaMariaDb(process.env.DATABASE_URL!);
+
+  // Environment-aware logging
+  const logLevels: Array<"query" | "info" | "warn" | "error"> =
+    appEnv === "production"
+      ? ["error"]
+      : appEnv === "staging"
+        ? ["error", "warn"]
+        : ["query", "info", "warn", "error"];
+
   prismaInstance = new PrismaClient({
     adapter: factory,
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: logLevels,
   });
-  if (process.env.NODE_ENV !== "production") {
+
+  if (appEnv !== "production") {
     globalForPrisma.prisma = prismaInstance;
   }
 }

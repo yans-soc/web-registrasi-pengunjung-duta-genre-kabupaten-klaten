@@ -1,0 +1,39 @@
+name: Dev - CI
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build:dev
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET_DEV }}
+          QR_SECRET: ${{ secrets.QR_SECRET_DEV }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_DEV }}

@@ -1,0 +1,49 @@
+name: Staging - CI/CD
+
+on:
+  push:
+    branches: [staging]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build:staging
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_STAGING }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET_STAGING }}
+          QR_SECRET: ${{ secrets.QR_SECRET_STAGING }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING }}
+
+      - name: Deploy to Staging Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /var/www/stag.genreklaten.web.id
+            git fetch origin staging
+            git reset --hard origin/staging
+            bash deploy-staging.sh

@@ -1,12 +1,28 @@
 {
   "name": "web-ticketing",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:local": "node -e \"require('dotenv').config({path:'.env.dev'})\" && next dev",
     "build": "next build",
+    "build:dev": "dotenv -e .env.dev -- next build",
+    "build:staging": "dotenv -e .env.staging -- next build && next export -o out-staging",
+    "build:prod": "dotenv -e .env.production -- next build",
     "start": "next start",
-    "lint": "next lint"
+    "start:staging": "NODE_ENV=staging APP_ENV=staging next start -p 3001",
+    "start:prod": "NODE_ENV=production APP_ENV=production next start -p 3000",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate:dev": "dotenv -e .env.dev -- prisma migrate dev",
+    "db:migrate:staging": "dotenv -e .env.staging -- prisma migrate deploy",
+    "db:migrate:prod": "dotenv -e .env.production -- prisma migrate deploy",
+    "db:seed:dev": "dotenv -e .env.dev -- node prisma/seed.js",
+    "db:seed:staging": "dotenv -e .env.staging -- node prisma/seed.js",
+    "db:seed:prod": "dotenv -e .env.production -- node prisma/seed.js",
+    "deploy:staging": "bash deploy-staging.sh",
+    "deploy:prod": "bash deploy-prod.sh"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.8.0",
@@ -32,6 +48,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^8",
     "eslint-config-next": "15.0.0",
     "postcss": "^8",
