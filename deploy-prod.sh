@@ -22,11 +22,11 @@ npx prisma generate
 
 # 4. Run database migrations
 echo "[4] Running migrations..."
-dotenv -e .env.production -- npx prisma migrate deploy
+npx dotenv-cli -e .env.production -- npx prisma migrate deploy
 
 # 5. Build application
 echo "[5] Building application..."
-dotenv -e .env.production -- npm run build
+npx dotenv-cli -e .env.production -- npm run build
 
 # 6. Restart PM2 process
 echo "[6] Restarting PM2 process..."
