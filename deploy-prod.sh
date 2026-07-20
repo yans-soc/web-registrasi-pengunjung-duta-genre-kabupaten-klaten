@@ -7,10 +7,11 @@ BRANCH="main"
 
 echo "===== Deploying to PRODUCTION ====="
 
-# 1. Pull latest code
+# 1. Pull latest code (force reset to avoid conflicts)
 echo "[1] Pulling latest $BRANCH branch..."
-git checkout $BRANCH
-git pull origin $BRANCH
+git fetch origin
+git checkout -f $BRANCH
+git reset --hard origin/$BRANCH
 
 # 2. Install dependencies
 echo "[2] Installing dependencies..."
