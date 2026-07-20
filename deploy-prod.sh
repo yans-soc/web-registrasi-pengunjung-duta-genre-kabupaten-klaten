@@ -14,7 +14,7 @@ git pull origin $BRANCH
 
 # 2. Install dependencies
 echo "[2] Installing dependencies..."
-npm ci --only=production
+npm install --legacy-peer-deps --omit=dev
 
 # 3. Generate Prisma client
 echo "[3] Generating Prisma client..."
