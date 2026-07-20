@@ -6,15 +6,15 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -22,20 +22,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build application
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Build application (verify)
         run: npm run build
 
-      - name: Deploy to Production Server
-        uses: appleboy/ssh-action@master
+      - name: Deploy to Production Server via SSH
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USERNAME }}
           key: ${{ secrets.PROD_SSH_KEY }}
-          port: 22
+          port: ${{ secrets.PROD_PORT || 22 }}
           script: |
-            cd /path/to/your/production/project
-            git pull origin main
-            npm install
-            npm run build
-            npx prisma migrate deploy
-            pm2 restart your-app-name
+            cd /var/www/genreklaten.web.id
+            bash deploy-prod.sh
