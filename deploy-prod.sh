@@ -21,9 +21,9 @@ npm install --legacy-peer-deps
 echo "[3] Generating Prisma client..."
 npx prisma generate
 
-# 4. Run database migrations
-echo "[4] Running migrations..."
-npx dotenv-cli -e .env.production -- npx prisma migrate deploy
+# 4. Sync database schema
+echo "[4] Syncing database schema..."
+npx dotenv-cli -e .env.production -- npx prisma db push
 
 # 5. Build application
 echo "[5] Building application..."
