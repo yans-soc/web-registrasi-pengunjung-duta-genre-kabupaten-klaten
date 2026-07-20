@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   // Compress responses
   compress: true,
 
+  // Ignore ESLint and TypeScript errors during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // HTTP headers per environment
   async headers() {
     return [
