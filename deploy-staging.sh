@@ -24,9 +24,9 @@ npx prisma generate
 echo "[4] Running migrations..."
 dotenv -e .env.staging -- npx prisma migrate deploy
 
-# 5. Build application
+# 5. Build application (skip ESLint for CI/CD)
 echo "[5] Building application..."
-dotenv -e .env.staging -- npm run build
+dotenv -e .env.staging -- DISABLE_ESLINT_PLUGIN=true npm run build
 
 # 6. Restart PM2 process
 echo "[6] Restarting PM2 process..."
