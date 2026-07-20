@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -28,13 +28,14 @@ jobs:
       - name: Build application (verify)
         run: npm run build
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
       - name: Deploy to Staging Server via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USERNAME }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          port: ${{ secrets.STAGING_PORT || 22 }}
-          script: |
-            cd /var/www/stag.genreklaten.web.id
-            bash deploy-staging.sh
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.STAGING_USERNAME }}@${{ secrets.STAGING_HOST }} \
+            "cd /var/www/stag.genreklaten.web.id && bash deploy-staging.sh"
