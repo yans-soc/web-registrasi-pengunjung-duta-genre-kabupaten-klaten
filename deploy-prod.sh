@@ -25,6 +25,8 @@ npm ci
 echo "Sinkronisasi skema database dengan Prisma..."
 npx prisma generate
 npx prisma db push --accept-data-loss
+echo "Menjalankan database seeding..."
+node prisma/seed.js
 
 # 5. Build aplikasi Next.js
 echo "Membangun aplikasi untuk mode produksi (Next.js Build)..."
