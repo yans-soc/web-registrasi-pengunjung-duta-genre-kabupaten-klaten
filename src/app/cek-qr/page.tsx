@@ -8,31 +8,6 @@ import {
   QrCode, Loader2, Calendar, ShieldCheck, Eye, Users, Home, AlertTriangle
 } from "lucide-react";
 
-const STYLES = `
-  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes scalePop { from { opacity:0; transform:scale(0.94); } to { opacity:1; transform:scale(1); } }
-  .fade-up { animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) both; }
-  .fade-up-1 { animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.07s both; }
-  .fade-up-2 { animation: fadeUp 0.55s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
-  .pop { animation: scalePop 0.5s cubic-bezier(0.16,1,0.3,1) 0.08s both; }
-  .search-input {
-    display: block; width: 100%;
-    padding: 0.9rem 1rem 0.9rem 2.75rem;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 0.75rem;
-    color: white;
-    font-size: 0.875rem; font-weight: 500;
-    transition: all 0.2s ease; outline: none;
-  }
-  .search-input::placeholder { color: rgba(255,255,255,0.2); }
-  .search-input:focus {
-    border-color: rgba(124,58,237,0.5);
-    background: rgba(124,58,237,0.04);
-    box-shadow: 0 0 0 3px rgba(124,58,237,0.08);
-  }
-`;
-
 interface VisitorDetail {
   id: number;
   ticketCode: string;
@@ -170,41 +145,34 @@ function VerificationAndSearchContent() {
     return (
       <div className="w-full max-w-md flex flex-col gap-4 relative z-10">
         <Link href="/cek-qr"
-          className="inline-flex items-center gap-2 text-xs font-bold text-white/35 hover:text-white/70 transition-colors fade-up">
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors fade-up">
           <ArrowLeft className="w-4 h-4" />
           Cari Tiket Lain
         </Link>
 
-        <div className="rounded-2xl overflow-hidden pop"
-          style={{
-            background: "rgba(10,8,18,0.95)",
-            border: "1px solid rgba(124,58,237,0.15)",
-            boxShadow: "0 0 0 1px rgba(255,255,255,0.03), 0 40px 100px -20px rgba(124,58,237,0.2), 0 40px 80px -30px rgba(0,0,0,0.7)"
-          }}>
-
+        <div className="rounded-3xl overflow-hidden pop bg-white shadow-2xl shadow-slate-200/50 border border-slate-200">
           {/* Loading */}
           {loadingVerify && (
             <div className="py-16 flex flex-col items-center gap-4">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #1D4ED8)" }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg shadow-pink-500/25"
+                style={{ background: "linear-gradient(135deg, #FF4FA3, #8B5CF6)" }}>
                 <Loader2 className="w-6 h-6 animate-spin" />
               </div>
-              <p className="text-xs text-white/35 font-bold uppercase tracking-wider">Memverifikasi Signature Tiket...</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Memverifikasi Signature Tiket...</p>
             </div>
           )}
 
           {/* Error */}
           {!loadingVerify && verifyError && !visitor && (
             <div className="p-8 text-center">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-                style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
-                <XCircle className="w-8 h-8" style={{ color: "#f87171" }} />
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-red-50 border border-red-200">
+                <XCircle className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Verifikasi Gagal</h3>
-              <div className="rounded-xl p-4 mb-5" style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)" }}>
-                <p className="text-xs font-bold leading-relaxed" style={{ color: "#f87171" }}>{verifyError}</p>
+              <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-3">Verifikasi Gagal</h3>
+              <div className="rounded-xl p-4 mb-5 bg-red-50 border border-red-200">
+                <p className="text-xs font-bold leading-relaxed text-red-700">{verifyError}</p>
               </div>
-              <p className="text-[10px] text-white/25 leading-relaxed font-semibold">
+              <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
                 Tiket ini palsu, tidak terdaftar, atau signature keamanannya tidak sah.
               </p>
             </div>
@@ -217,36 +185,28 @@ function VerificationAndSearchContent() {
               <div className="relative overflow-hidden px-7 py-8 text-center"
                 style={{
                   background: isCheckedIn
-                    ? "linear-gradient(160deg, #064e3b 0%, #022c22 100%)"
-                    : "linear-gradient(160deg, #0f0d1f 0%, #0c0a1a 100%)"
+                    ? "linear-gradient(160deg, #059669 0%, #047857 100%)"
+                    : "linear-gradient(160deg, #FF4FA3 0%, #8B5CF6 100%)"
                 }}>
-                {/* Top accent line */}
                 <div className="absolute top-0 inset-x-0 h-[2px]"
-                  style={{ background: isCheckedIn ? "linear-gradient(90deg, #10b981, #059669)" : "linear-gradient(90deg, #7C3AED, #1D4ED8)" }} />
-                {/* Glows */}
-                <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-[60px] opacity-25"
-                  style={{ backgroundColor: isCheckedIn ? "#10b981" : "#7C3AED" }} />
-                <div className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full blur-[60px] opacity-15"
-                  style={{ backgroundColor: isCheckedIn ? "#059669" : "#1D4ED8" }} />
+                  style={{ background: "linear-gradient(90deg, rgba(255,255,255,0.3), transparent)" }} />
+                <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-[60px] opacity-30 bg-white/20" />
+                <div className="absolute -bottom-12 -left-12 w-36 h-36 rounded-full blur-[60px] opacity-20 bg-white/10" />
 
                 <div className="relative z-10">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] mb-3"
-                    style={isCheckedIn
-                      ? { background: "rgba(16,185,129,0.1)", borderColor: "rgba(16,185,129,0.25)", color: "#6ee7b7" }
-                      : { background: "rgba(124,58,237,0.08)", borderColor: "rgba(124,58,237,0.2)", color: "rgba(167,139,250,0.8)" }}>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.2em] mb-3 bg-white/20 border-white/30 text-white">
                     {isCheckedIn
                       ? <><CheckCircle2 className="w-3 h-3" /> Tiket Valid · Hadir</>
                       : <><ShieldCheck className="w-3 h-3" /> Tiket Valid · Siap Check-In</>}
                   </div>
                   <p className="text-2xl font-black tracking-tight uppercase text-white">{visitor.ticketCode}</p>
-                  <p className="text-white/30 text-[9px] uppercase tracking-wider mt-1 font-semibold">Keamanan Digital Kriptografi Sah</p>
+                  <p className="text-white/70 text-[9px] uppercase tracking-wider mt-1 font-semibold">Keamanan Digital Kriptografi Sah</p>
                 </div>
               </div>
 
               {/* Check-in success alert */}
               {checkInSuccess && (
-                <div className="flex items-center justify-center gap-2 py-3 px-4 border-b text-[10px] font-black uppercase tracking-wider"
-                  style={{ background: "rgba(16,185,129,0.06)", borderColor: "rgba(16,185,129,0.15)", color: "#34d399" }}>
+                <div className="flex items-center justify-center gap-2 py-3 px-4 border-b border-emerald-100 bg-emerald-50 text-[10px] font-black uppercase tracking-wider text-emerald-700">
                   <CheckCircle2 className="w-4 h-4" />
                   {checkInSuccess}
                 </div>
@@ -255,60 +215,59 @@ function VerificationAndSearchContent() {
               {/* Details */}
               <div className="p-7 space-y-5">
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/25 mb-1.5">Nama Lengkap</p>
-                  <p className="text-base font-bold text-white uppercase">{visitor.name}</p>
+                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 mb-1.5">Nama Lengkap</p>
+                  <p className="text-base font-bold text-slate-900 uppercase">{visitor.name}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/25 mb-1.5">Jenis Kelamin</p>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white/60 uppercase">
-                      <Users className="w-3.5 h-3.5" style={{ color: "#7C3AED" }} />
+                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 mb-1.5">Jenis Kelamin</p>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase">
+                      <Users className="w-3.5 h-3.5 text-pink-500" />
                       {visitor.gender}
                     </span>
                   </div>
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/25 mb-1.5">Usia / Lahir</p>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white/60 uppercase">
-                      <Calendar className="w-3.5 h-3.5" style={{ color: "#a78bfa" }} />
+                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 mb-1.5">Usia / Lahir</p>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase">
+                      <Calendar className="w-3.5 h-3.5 text-purple-500" />
                       {visitor.age} Tahun
                     </span>
-                    <p className="text-[9px] text-white/25 mt-0.5 font-semibold">({formatBirthDate(visitor.birthDate)})</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5 font-semibold">({formatBirthDate(visitor.birthDate)})</p>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/25 mb-1.5">Alamat Lengkap</p>
-                  <p className="text-xs font-bold text-white/60 leading-relaxed uppercase">{visitor.address}</p>
+                  <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 mb-1.5">Alamat Lengkap</p>
+                  <p className="text-xs font-bold text-slate-600 leading-relaxed uppercase">{visitor.address}</p>
                 </div>
 
                 {/* Status */}
-                <div className="pt-5 space-y-4" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                <div className="pt-5 space-y-4 border-t border-slate-100">
                   <div>
-                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/25 mb-2">Status Tiket</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.25em] text-slate-400 mb-2">Status Tiket</p>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border"
                       style={isCheckedIn
-                        ? { background: "rgba(16,185,129,0.06)", color: "#34d399", borderColor: "rgba(16,185,129,0.2)" }
-                        : { background: "rgba(245,158,11,0.06)", color: "#fbbf24", borderColor: "rgba(245,158,11,0.2)" }}>
+                        ? { background: "#ECFDF5", color: "#059669", borderColor: "#A7F3D0" }
+                        : { background: "#FFFBEB", color: "#D97706", borderColor: "#FDE68A" }}>
                       {isCheckedIn ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       {isCheckedIn ? "Hadir (Checked In)" : "Belum Hadir (Pending)"}
                     </span>
                   </div>
 
                   {isCheckedIn && visitor.checkInTime && (
-                    <div className="rounded-xl p-4 space-y-3"
-                      style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}>
+                    <div className="rounded-xl p-4 space-y-3 bg-slate-50 border border-slate-200">
                       <div>
-                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Waktu Check-In</p>
-                        <p className="text-xs font-bold text-white/60 flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5" style={{ color: "#7C3AED" }} />
+                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Waktu Check-In</p>
+                        <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-purple-500" />
                           {formatDate(visitor.checkInTime)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-1">Scanner Operator</p>
-                        <p className="text-xs font-bold text-white/60 flex items-center gap-1.5">
-                          <UserCheck className="w-3.5 h-3.5" style={{ color: "#a78bfa" }} />
+                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">Scanner Operator</p>
+                        <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                          <UserCheck className="w-3.5 h-3.5 text-pink-500" />
                           {visitor.checkedInBy || "Sistem"}
                         </p>
                       </div>
@@ -321,8 +280,8 @@ function VerificationAndSearchContent() {
                   <button
                     onClick={handleCheckIn}
                     disabled={loadingCheckIn}
-                    className="w-full py-4 font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ background: "linear-gradient(135deg, #7C3AED, #1D4ED8)", boxShadow: "0 8px 32px rgba(124,58,237,0.3)" }}>
+                    className="w-full py-4 font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40"
+                    style={{ background: "linear-gradient(135deg, #FF4FA3, #8B5CF6)" }}>
                     {loadingCheckIn
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Check-in...</>
                       : <><UserCheck className="w-4 h-4" /> Check-In Pengunjung</>}
@@ -331,15 +290,14 @@ function VerificationAndSearchContent() {
 
                 {/* Check-in error */}
                 {verifyError && visitor && (
-                  <div className="flex items-start gap-2 p-3 rounded-xl text-xs font-semibold"
-                    style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)", color: "#f87171" }}>
+                  <div className="flex items-start gap-2 p-3 rounded-xl text-xs font-semibold bg-red-50 border border-red-200 text-red-700">
                     <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                     {verifyError}
                   </div>
                 )}
 
                 {checkingAdmin && (
-                  <p className="text-center text-[9px] text-white/20 font-bold uppercase tracking-wider">
+                  <p className="text-center text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                     Memvalidasi Status Operator...
                   </p>
                 )}
@@ -349,7 +307,7 @@ function VerificationAndSearchContent() {
         </div>
 
         <div className="flex items-center justify-center">
-          <Link href="/" className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors">
+          <Link href="/" className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-colors">
             <Home className="w-3.5 h-3.5" />
             Kembali ke Beranda
           </Link>
@@ -362,30 +320,25 @@ function VerificationAndSearchContent() {
   return (
     <div className="w-full max-w-md flex flex-col gap-4 relative z-10">
       {/* Back */}
-      <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-white/35 hover:text-white/70 transition-colors fade-up">
+      <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors fade-up">
         <ArrowLeft className="w-4 h-4" />
         Kembali ke Beranda
       </Link>
 
       {/* Search card */}
-      <div className="rounded-2xl overflow-hidden pop"
-        style={{
-          background: "rgba(10,8,18,0.95)",
-          border: "1px solid rgba(124,58,237,0.15)",
-          boxShadow: "0 0 0 1px rgba(255,255,255,0.03), 0 40px 100px -20px rgba(124,58,237,0.2), 0 40px 80px -30px rgba(0,0,0,0.7)"
-        }}>
+      <div className="rounded-3xl overflow-hidden pop bg-white shadow-2xl shadow-slate-200/50 border border-slate-200">
         {/* Top gradient bar */}
-        <div className="h-[2px] w-full" style={{ background: "linear-gradient(90deg, #7C3AED, #1D4ED8)" }} />
+        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #FF4FA3, #8B5CF6)" }} />
 
         <div className="p-6 sm:p-8">
           {/* Title */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg mx-auto mb-4"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #1D4ED8)", boxShadow: "0 8px 32px rgba(124,58,237,0.3)" }}>
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-lg shadow-pink-500/25 mx-auto mb-4"
+              style={{ background: "linear-gradient(135deg, #FF4FA3, #8B5CF6)" }}>
               <QrCode className="w-6 h-6" />
             </div>
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight">Cek &amp; Cari Tiket</h2>
-            <p className="text-xs text-white/35 mt-2 font-medium leading-relaxed">
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Cek & Cari Tiket</h2>
+            <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
               Masukkan nama lengkap atau kode tiket pendaftaran
             </p>
           </div>
@@ -394,7 +347,7 @@ function VerificationAndSearchContent() {
           <form onSubmit={handleSearch} className="mb-6">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/20">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
                   <Search className="w-4 h-4" />
                 </div>
                 <input
@@ -403,14 +356,14 @@ function VerificationAndSearchContent() {
                   placeholder="Ketik nama atau kode tiket..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
+                  className="block w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 text-sm transition-all"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loadingSearch}
-                className="px-5 font-black rounded-xl text-white transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center shadow-md"
-                style={{ background: "linear-gradient(135deg, #7C3AED, #1D4ED8)", boxShadow: "0 4px 16px rgba(124,58,237,0.3)" }}>
+                className="px-5 font-black rounded-xl text-white transition-all hover:scale-[1.05] disabled:opacity-50 flex items-center justify-center shadow-lg shadow-pink-500/25"
+                style={{ background: "linear-gradient(135deg, #FF4FA3, #8B5CF6)" }}>
                 {loadingSearch
                   ? <Loader2 className="w-4 h-4 animate-spin" />
                   : <Search className="w-4 h-4" />}
@@ -418,8 +371,7 @@ function VerificationAndSearchContent() {
             </div>
 
             {searchError && (
-              <div className="mt-3 flex items-center gap-2 p-3 rounded-xl text-xs font-semibold"
-                style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.15)", color: "#f87171" }}>
+              <div className="mt-3 flex items-center gap-2 p-3 rounded-xl text-xs font-semibold bg-red-50 border border-red-200 text-red-700">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                 {searchError}
               </div>
@@ -429,29 +381,28 @@ function VerificationAndSearchContent() {
           {/* Search results */}
           {searchResults.length > 0 && (
             <div>
-              <p className="text-[9px] font-black uppercase tracking-wider text-white/20 mb-3">
+              <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-3">
                 {searchResults.length} Hasil Ditemukan
               </p>
-              <div className="divide-y max-h-72 overflow-y-auto -mx-1 px-1" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+              <div className="divide-y max-h-72 overflow-y-auto -mx-1 px-1 divide-slate-100">
                 {searchResults.map((v) => (
                   <div key={v.id} className="py-3.5 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-white uppercase truncate">{v.name}</p>
-                      <p className="text-[10px] text-white/35 font-semibold mt-0.5 truncate">
+                      <p className="text-sm font-bold text-slate-900 uppercase truncate">{v.name}</p>
+                      <p className="text-[10px] text-slate-400 font-semibold mt-0.5 truncate">
                         {v.ticketCode} · {v.address}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border"
                         style={v.status === "CHECKED_IN"
-                          ? { background: "rgba(16,185,129,0.07)", color: "#34d399", borderColor: "rgba(16,185,129,0.2)" }
-                          : { background: "rgba(245,158,11,0.07)", color: "#fbbf24", borderColor: "rgba(245,158,11,0.2)" }}>
+                          ? { background: "#ECFDF5", color: "#059669", borderColor: "#A7F3D0" }
+                          : { background: "#FFFBEB", color: "#D97706", borderColor: "#FDE68A" }}>
                         {v.status === "CHECKED_IN" ? "Hadir" : "Pending"}
                       </span>
                       <Link
                         href={`/cek-qr?uuid=${v.uuid}&code=${v.ticketCode}&sig=${v.signature}`}
-                        className="w-8 h-8 rounded-xl border flex items-center justify-center transition-all hover:border-violet-500/30"
-                        style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+                        className="w-8 h-8 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center transition-all hover:border-pink-300 text-slate-400 hover:text-pink-500"
                         title="Lihat Detail">
                         <Eye className="w-3.5 h-3.5" />
                       </Link>
@@ -466,25 +417,23 @@ function VerificationAndSearchContent() {
 
       {/* Info cards */}
       <div className="grid grid-cols-2 gap-3 fade-up-1">
-        <div className="rounded-xl p-4"
-          style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}>
-          <ShieldCheck className="w-5 h-5 mb-2.5" style={{ color: "#7C3AED" }} />
-          <p className="text-xs font-black text-white uppercase mb-0.5">Kriptografi Sah</p>
-          <p className="text-[10px] text-white/30 leading-relaxed font-semibold">Tanda tangan digital keaslian e-ticket</p>
+        <div className="rounded-xl p-4 bg-slate-50 border border-slate-200">
+          <ShieldCheck className="w-5 h-5 mb-2.5 text-pink-500" />
+          <p className="text-xs font-black text-slate-900 uppercase mb-0.5">Kriptografi Sah</p>
+          <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">Tanda tangan digital keaslian e-ticket</p>
         </div>
-        <div className="rounded-xl p-4"
-          style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.1)" }}>
-          <QrCode className="w-5 h-5 mb-2.5" style={{ color: "#a78bfa" }} />
-          <p className="text-xs font-black text-white uppercase mb-0.5">Sekali Scan</p>
-          <p className="text-[10px] text-white/30 leading-relaxed font-semibold">QR hanya dapat digunakan 1 kali check-in</p>
+        <div className="rounded-xl p-4 bg-slate-50 border border-slate-200">
+          <QrCode className="w-5 h-5 mb-2.5 text-purple-500" />
+          <p className="text-xs font-black text-slate-900 uppercase mb-0.5">Sekali Scan</p>
+          <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">QR hanya dapat digunakan 1 kali check-in</p>
         </div>
       </div>
 
       {/* Register link */}
       <div className="text-center fade-up-2">
-        <p className="text-xs text-white/25 font-medium">
+        <p className="text-xs text-slate-500 font-medium">
           Belum punya tiket?{" "}
-          <Link href="/daftar" className="font-bold hover:underline transition-all" style={{ color: "#7C3AED" }}>
+          <Link href="/daftar" className="font-bold text-pink-500 hover:text-pink-600 transition-all">
             Daftar Sekarang →
           </Link>
         </p>
@@ -495,27 +444,19 @@ function VerificationAndSearchContent() {
 
 export default function CekQRPage() {
   return (
-    <div className="min-h-screen bg-[#050408] py-10 sm:py-16 px-4 flex flex-col justify-center items-center relative overflow-hidden">
-      <style jsx global>{STYLES}</style>
-
-      {/* Background glows */}
-      <div className="absolute top-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[160px] opacity-[0.1] pointer-events-none"
-        style={{ backgroundColor: "#7C3AED" }} />
-      <div className="absolute bottom-[-15%] left-[-10%] w-[400px] h-[400px] rounded-full blur-[140px] opacity-[0.07] pointer-events-none"
-        style={{ backgroundColor: "#1D4ED8" }} />
-
-      {/* Grid overlay */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
-        style={{ backgroundImage: "linear-gradient(#7C3AED20 1px, transparent 1px), linear-gradient(90deg, #7C3AED20 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-pink-50 py-10 sm:py-16 px-4 flex flex-col justify-center items-center relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-gradient-to-br from-pink-200/40 to-purple-200/40 rounded-full blur-3xl" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-gradient-to-tr from-blue-200/40 to-cyan-200/40 rounded-full blur-3xl" />
 
       <Suspense
         fallback={
           <div className="flex flex-col items-center gap-4 py-16 relative z-10">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #1D4ED8)" }}>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg shadow-pink-500/25"
+              style={{ background: "linear-gradient(135deg, #FF4FA3, #8B5CF6)" }}>
               <Loader2 className="w-6 h-6 animate-spin" />
             </div>
-            <p className="text-xs text-white/35 font-bold uppercase tracking-wider">Memuat halaman verifikasi...</p>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Memuat halaman verifikasi...</p>
           </div>
         }
       >
