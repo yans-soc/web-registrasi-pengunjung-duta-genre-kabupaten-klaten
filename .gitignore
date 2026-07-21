@@ -45,3 +45,9 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# deploy scripts and server config
+deploy-prod.sh
+deploy-staging.sh
+setup-server.sh
+nginx-genreklaten.conf

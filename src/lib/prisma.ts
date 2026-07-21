@@ -11,7 +11,6 @@ if (globalForPrisma.prisma) {
   const appEnv = process.env.APP_ENV || "development";
   const factory = new PrismaMariaDb(process.env.DATABASE_URL!);
 
-  // Environment-aware logging
   const logLevels: Array<"query" | "info" | "warn" | "error"> =
     appEnv === "production"
       ? ["error"]

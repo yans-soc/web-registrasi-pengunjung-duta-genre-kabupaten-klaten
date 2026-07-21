@@ -34,20 +34,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid payload, must be an array of fields" }, { status: 400 });
     }
 
-    // Read all existing form fields to determine which ones to delete
     const existingFields = await prisma.formField.findMany();
     const existingIds = existingFields.map((f: any) => f.id);
     const incomingIds = fields.filter((f: any) => f.id).map((f: any) => f.id);
     const toDelete = existingIds.filter((id: number) => !incomingIds.includes(id));
 
-    // Delete removed fields
     if (toDelete.length > 0) {
       await prisma.formField.deleteMany({
         where: { id: { in: toDelete } },
       });
     }
 
-    // Upsert remaining fields
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
       const { id, label, fieldName, fieldType, required, placeholder, options } = field;

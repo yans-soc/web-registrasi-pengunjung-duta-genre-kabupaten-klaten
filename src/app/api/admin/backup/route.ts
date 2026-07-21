@@ -18,7 +18,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized / Super Admin only" }, { status: 401 });
     }
 
-    // Export all data
     const visitors = await prisma.visitor.findMany();
     const settings = await prisma.systemSetting.findMany();
     const customSections = await prisma.customSection.findMany();
@@ -64,9 +63,7 @@ export async function POST(req: NextRequest) {
 
     const data = typeof backup === "string" ? JSON.parse(backup) : backup;
 
-    // Begin restoring tables inside transaction / sequences
     await prisma.$transaction(async (tx: any) => {
-      // 1. Restore settings
       if (Array.isArray(data.settings)) {
         await tx.systemSetting.deleteMany();
         for (const item of data.settings) {
@@ -76,7 +73,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 2. Restore customSections
       if (Array.isArray(data.customSections)) {
         await tx.customSection.deleteMany();
         for (const item of data.customSections) {
@@ -93,7 +89,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 3. Restore formFields
       if (Array.isArray(data.formFields)) {
         await tx.formField.deleteMany();
         for (const item of data.formFields) {
@@ -112,7 +107,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 4. Restore visitors
       if (Array.isArray(data.visitors)) {
         await tx.visitor.deleteMany();
         for (const item of data.visitors) {
@@ -143,7 +137,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 5. Restore activityLogs
       if (Array.isArray(data.activityLogs)) {
         await tx.activityLog.deleteMany();
         for (const item of data.activityLogs) {

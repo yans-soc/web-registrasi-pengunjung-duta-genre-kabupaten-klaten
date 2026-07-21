@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
   try {
     const inputData = await req.json();
 
-    // 1. Validate required spec fields
     const fullName = inputData.full_name?.trim() || "";
     const gender = inputData.gender?.trim() || "";
     const birthDate = inputData.birth_date?.trim() || "";
@@ -74,10 +73,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate age from birth_date
     const age = calculateAge(birthDate);
 
-    // 2. Validate ticket limits and registration period from settings
     const settings = await prisma.systemSetting.findMany();
     const settingsMap: Record<string, any> = {};
     for (const s of settings) {
@@ -88,7 +85,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check ticket limit
     const ticketLimit = parseInt(settingsMap.ticket_limit || "0", 10);
     if (ticketLimit > 0) {
       const currentCount = await prisma.visitor.count({
@@ -104,7 +100,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check registration period
     const regStart = settingsMap.registration_start ? new Date(settingsMap.registration_start) : null;
     const regEnd = settingsMap.registration_end ? new Date(settingsMap.registration_end) : null;
     const now = new Date();
@@ -122,7 +117,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Generate unique code and QR token with retry logic
     let uniqueCode = "";
     let isUnique = false;
     let attempts = 0;
@@ -145,17 +139,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate qr_code (backward compat) and qr_token
     const qr_code = uniqueCode;
     const qr_token = generateQRToken();
-
-    // Generate uuid upfront for signature
     const visitorUuid = crypto.randomUUID();
-
-    // Generate ticket signature using uniqueCode + fullName + status (must match check-in verification)
     const signature = generateTicketSignature(uniqueCode, fullName, "REGISTERED");
 
-    // 4. Create visitor in database with spec fields
     const visitor = await prisma.visitor.create({
       data: {
         uuid: visitorUuid,
@@ -167,7 +155,6 @@ export async function POST(req: NextRequest) {
         address,
         qr_token,
         signature,
-        // Legacy fields for backward compatibility
         qr_code,
         name: fullName,
         nik: "VIRTUAL-" + Date.now() + Math.floor(Math.random() * 1000),

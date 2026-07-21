@@ -6,7 +6,6 @@ import { logActivity } from "@/lib/activityLogger";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Verify Admin Token
     const token = req.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
@@ -32,7 +31,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Fetch Visitor by uuid
     const visitor = await prisma.visitor.findUnique({
       where: { uuid },
     });
@@ -44,7 +42,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Cross-check uniqueCode matches
     if (visitor.unique_code !== uniqueCode) {
       return NextResponse.json(
         { error: "Kode unik tidak cocok dengan data pengunjung." },
@@ -52,7 +49,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if visitor is blacklisted in Visitor status or Blacklist table
     if (visitor.status === "BLACKLISTED") {
       return NextResponse.json(
         { error: "Check-in ditolak! Pengunjung ini berada dalam daftar hitam (Blacklisted)." },
@@ -60,7 +56,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check blacklist by name or uuid
     const blacklisted = await prisma.blacklist.findFirst({
       where: {
         OR: [
@@ -92,7 +87,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Verify Signature using unique_code and full_name
     let isValidSignature = verifyTicketSignature(uniqueCode, visitor.full_name, "REGISTERED", signature);
     if (!isValidSignature) {
       isValidSignature = verifyTicketSignature(uniqueCode, visitor.full_name, "PENDING", signature);
@@ -105,7 +99,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Update Status to CHECKED_IN atomically using transaction to prevent concurrency issues
     const updatedVisitor = await prisma.$transaction(async (tx: any) => {
       const current = await tx.visitor.findUnique({
         where: { uuid },
@@ -124,7 +117,6 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    // 5. Log Activity
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
     await logActivity(
       decoded.id,

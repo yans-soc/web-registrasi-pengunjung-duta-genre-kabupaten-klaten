@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Sign JWT
     const payload = {
       id: admin.id,
       username: admin.username,
@@ -43,7 +42,6 @@ export async function POST(req: NextRequest) {
     };
     const token = await signJWT(payload);
 
-    // Set cookie
     const response = NextResponse.json({
       success: true,
       message: "Login berhasil",
@@ -57,10 +55,9 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 24 * 60 * 60, // 1 day
+      maxAge: 24 * 60 * 60,
     });
 
-    // Log Activity
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
     await logActivity(admin.id, `LOGIN: Admin ${admin.username} berhasil login`, ip);
 

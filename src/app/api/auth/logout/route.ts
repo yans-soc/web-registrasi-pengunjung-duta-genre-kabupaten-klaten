@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
       message: "Logout berhasil",
     });
 
-    // Delete cookie by setting maxAge to 0
     response.cookies.set({
       name: "token",
       value: "",

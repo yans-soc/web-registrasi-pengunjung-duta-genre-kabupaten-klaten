@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search") || "";
-    let status = searchParams.get("status") || "ALL"; // ALL, CHECKED_IN, REGISTERED, BLACKLISTED
+    let status = searchParams.get("status") || "ALL";
     if (status === "PRESENT") status = "CHECKED_IN";
     if (status === "PENDING") status = "REGISTERED";
     
@@ -190,7 +190,6 @@ export async function PUT(req: NextRequest) {
       data: updatedData,
     });
 
-    // If status changed to BLACKLISTED, make sure it is added to blacklist table
     if (status === "BLACKLISTED") {
       await prisma.blacklist.upsert({
         where: { value: updated.nik },

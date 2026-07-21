@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { Download, ArrowLeft, Printer, RefreshCw, AlertTriangle } from "lucide-react";
+import { Download, ArrowLeft, Printer, RefreshCw, AlertTriangle, Ticket, CheckCircle, Share2, Home } from "lucide-react";
 
 function TicketContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const uuid = searchParams.get("uuid");
   const code = searchParams.get("code");
@@ -18,6 +17,7 @@ function TicketContent() {
 
   const [qrUrl, setQrUrl] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!uuid || !code || !name || !status || !sig) {
@@ -25,23 +25,21 @@ function TicketContent() {
       return;
     }
 
-    // QR payload per spec: URL with query params (uuid, code, sig) for scanner compatibility
     const origin = window.location.origin;
     const qrPayload = `${origin}/cek-qr?uuid=${encodeURIComponent(uuid)}&code=${encodeURIComponent(code)}&sig=${encodeURIComponent(sig)}`;
 
     QRCode.toDataURL(
       qrPayload,
       {
-        width: 300,
+        width: 320,
         margin: 2,
         color: {
-          dark: "#EA580C",
+          dark: "#0C0A09",
           light: "#ffffff",
         },
       },
       (err, url) => {
         if (err) {
-          console.error("QR Code generation error:", err);
           setError("Gagal menghasilkan QR Code.");
         } else {
           setQrUrl(url);
@@ -50,9 +48,7 @@ function TicketContent() {
     );
   }, [uuid, code, name, status, sig]);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   const handleDownload = () => {
     if (!qrUrl) return;
@@ -64,120 +60,199 @@ function TicketContent() {
     document.body.removeChild(link);
   };
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/cek-qr?uuid=${uuid}&code=${code}&sig=${sig}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Tiket ${name}`, url: shareUrl });
+      } catch (e) {
+        // user cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   if (error) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center max-w-md w-full">
-        <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center text-[#DC2626] mx-auto mb-4">
-          <AlertTriangle className="w-8 h-8" />
+      <div className="w-full max-w-md">
+        <div className="bg-[#12100E] rounded-2xl border border-white/[0.08] p-10 text-center shadow-2xl">
+          <div className="w-16 h-16 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-500 mx-auto mb-5">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Tiket Tidak Valid</h3>
+          <p className="text-xs text-white/40 mb-8 leading-relaxed">{error}</p>
+          <Link
+            href="/daftar"
+            className="inline-flex items-center justify-center gap-2 w-full py-4 text-[#0C0A09] font-black rounded-xl text-xs uppercase tracking-wider transition-all hover:brightness-110 shadow-lg"
+            style={{ background: "linear-gradient(135deg, #FBBF24, #F97316)" }}
+          >
+            <Ticket className="w-4 h-4" />
+            Daftar Ulang
+          </Link>
         </div>
-        <h3 className="text-lg font-black text-slate-900 mb-2">Tiket Tidak Valid</h3>
-        <p className="text-sm text-slate-500 mb-6">{error}</p>
-        <Link
-          href="/daftar"
-          className="inline-block w-full py-3 text-white font-bold rounded-xl shadow-md transition-colors text-sm"
-          style={{ backgroundColor: "#EA580C" }}
-        >
-          Daftar Ulang
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md flex flex-col gap-6">
-      {/* Back Link */}
+    <div className="w-full max-w-md flex flex-col gap-6 relative z-10">
+      {/* Back link */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[#EA580C] font-medium transition-colors print:hidden"
+        className="inline-flex items-center gap-2 text-xs font-bold text-white/40 hover:text-[#F97316] transition-colors print:hidden"
       >
-        <ArrowLeft className="w-4 h-4" /> Kembali ke Beranda
+        <ArrowLeft className="w-4 h-4" />
+        Kembali ke Beranda
       </Link>
 
-      {/* Ticket Container */}
-      <div id="ticket-card" className="bg-white rounded-3xl shadow-xl border border-slate-150 overflow-hidden relative print:shadow-none print:border-none">
-        {/* Ticket Header Banner - Orange theme */}
-        <div className="bg-gradient-to-r from-[#EA580C] to-[#DC2626] text-white p-6 text-center relative overflow-hidden flex flex-col items-center">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#DC2626] rounded-full filter blur-xl opacity-20 -mr-6 -mt-6"></div>
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-[#EA580C] rounded-full filter blur-lg opacity-25 -ml-8 -mb-8"></div>
-          
-          <span className="bg-white/25 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider mb-2.5 inline-block border border-white/35">
-            E-TICKET RESMI
-          </span>
-          <h2 className="text-base font-extrabold tracking-tight uppercase">Duta Genre Klaten 2026</h2>
-          <p className="text-[10px] text-white/80 font-medium mt-0.5">Apresiasi & Pemilihan Malam Puncak</p>
+      {/* Success badge */}
+      <div className="flex items-center justify-center gap-2 print:hidden">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+          <CheckCircle className="w-3.5 h-3.5" />
+          Pendaftaran Berhasil
+        </div>
+      </div>
+
+      {/* ── Ticket Card (Boarding Pass style) ── */}
+      <div
+        id="ticket-card"
+        className="bg-[#141210] rounded-2xl border border-white/[0.08] overflow-hidden shadow-2xl print:bg-white print:text-black print:border-none print:shadow-none"
+      >
+        {/* Header */}
+        <div
+          className="relative overflow-hidden text-white px-7 py-7 text-center print:text-black"
+          style={{ background: "linear-gradient(135deg, #1A1816 0%, #12100E 100%)" }}
+        >
+          {/* Accent lines */}
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#FBBF24] to-[#F97316]" />
+          <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#F97316]/5 rounded-full blur-xl" />
+          <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-[#FBBF24]/5 rounded-full blur-xl" />
+
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.04] border border-white/[0.06] rounded-full text-[9px] font-black uppercase tracking-[0.2em] text-white/50 mb-3 print:border-black/10 print:text-black/50">
+              <Ticket className="w-3 h-3 text-[#F97316]" />
+              E-Ticket Resmi
+            </span>
+            <h2 className="text-xl font-black tracking-tight uppercase">Duta Genre Klaten 2026</h2>
+            <p className="text-white/40 text-[10px] uppercase tracking-wider mt-1 print:text-black/40">Malam Puncak Pemilihan & Apresiasi</p>
+          </div>
         </div>
 
-        {/* Visitor Details */}
-        <div className="p-8 flex flex-col items-center border-b border-dashed border-slate-200 relative">
-          <div className="absolute -left-3 bottom-0 w-6 h-6 bg-[#FFF8F2] rounded-full border-r border-slate-200 transform translate-y-1/2 print:bg-white"></div>
-          <div className="absolute -right-3 bottom-0 w-6 h-6 bg-[#FFF8F2] rounded-full border-l border-slate-200 transform translate-y-1/2 print:bg-white"></div>
+        {/* Ticket tear line */}
+        <div className="relative flex items-center bg-[#141210] print:bg-white">
+          <div className="absolute -left-3.5 w-7 h-7 bg-[#0C0A09] rounded-full border-r border-white/[0.08] z-10 print:bg-white print:border-black" />
+          <div className="flex-1 border-t-2 border-dashed border-white/[0.08] mx-4 print:border-black/20" />
+          <div className="absolute -right-3.5 w-7 h-7 bg-[#0C0A09] rounded-full border-l border-white/[0.08] z-10 print:bg-white print:border-black" />
+        </div>
 
+        {/* QR + Info */}
+        <div className="px-7 py-7 bg-[#141210] flex flex-col items-center print:bg-white">
           {/* QR Code Container */}
-          <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl mb-6 shadow-inner flex items-center justify-center">
+          <div className="p-4 bg-white rounded-xl mb-6 shadow-inner flex items-center justify-center">
             {qrUrl ? (
               <img src={qrUrl} alt="QR Code Ticket" className="w-48 h-48 rounded-lg" />
             ) : (
-              <div className="w-48 h-48 rounded-lg flex flex-col items-center justify-center text-slate-400 gap-2">
-                <RefreshCw className="w-6 h-6 animate-spin" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider">Membuat QR...</span>
+              <div className="w-48 h-48 rounded-lg flex flex-col items-center justify-center text-slate-300 gap-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-orange-500" />
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Generasi QR...</span>
               </div>
             )}
           </div>
 
-          {/* Unique Code - per spec */}
-          <div className="text-center mb-3">
-            <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">UNIQUE CODE</span>
-            <p className="text-xl font-black text-[#EA580C] tracking-tight mt-0.5">{code}</p>
+          {/* Ticket code display */}
+          <div className="w-full text-center mb-6">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-1.5 print:text-black/30">Kode Registrasi</p>
+            <p
+              className="text-3xl font-black tracking-tight uppercase"
+              style={{ background: "linear-gradient(135deg, #FBBF24, #F97316)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+            >
+              {code}
+            </p>
           </div>
 
-          {/* QR Token */}
-          <div className="text-center">
-            <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">QR TOKEN</span>
-            <p className="text-xs font-mono text-slate-600 mt-0.5">{uuid?.substring(0, 8)}...{uuid?.substring(24)}</p>
+          {/* Ticket Token */}
+          <div className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-2.5 text-center print:bg-slate-50 print:border-black/5">
+            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 mb-1 print:text-black/30">ID Token Keamanan</p>
+            <p className="text-[10px] font-mono text-white/50 print:text-black/60">
+              {uuid?.substring(0, 8)}...{uuid?.substring(24)}
+            </p>
           </div>
         </div>
 
-        {/* Ticket Details Footer */}
-        <div className="bg-slate-50/50 px-8 py-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        {/* Ticket tear line */}
+        <div className="relative flex items-center bg-[#141210] print:bg-white">
+          <div className="absolute -left-3.5 w-7 h-7 bg-[#0C0A09] rounded-full border-r border-white/[0.08] z-10 print:bg-white print:border-black" />
+          <div className="flex-1 border-t-2 border-dashed border-white/[0.08] mx-4 print:border-black/20" />
+          <div className="absolute -right-3.5 w-7 h-7 bg-[#0C0A09] rounded-full border-l border-white/[0.08] z-10 print:bg-white print:border-black" />
+        </div>
+
+        {/* Ticket details footer */}
+        <div className="px-7 py-6 bg-[#181614] border-t border-white/[0.03] print:bg-slate-50 print:border-t-black/10">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">NAMA PENGUNJUNG</span>
-              <span className="text-sm font-bold text-slate-800 break-words block">{name}</span>
+              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25 print:text-black/30 mb-1">Nama Pengunjung</p>
+              <p className="text-xs font-bold text-white uppercase print:text-black">{name}</p>
             </div>
             <div>
-              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">STATUS KEHADIRAN</span>
-              <span className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">
-                PENDING
+              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25 print:text-black/30 mb-1">Status Tiket</p>
+              <span className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-wider text-[#FBBF24]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FBBF24] shrink-0" />
+                PENDING VERIFIKASI
               </span>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-100 text-center">
-            <p className="text-[10px] text-slate-400 font-medium">
-              Tunjukkan QR Code ini pada panitia saat memasuki ruangan acara. <br />
-              Satu QR Code hanya dapat digunakan satu kali.
+          <div className="pt-4 border-t border-white/[0.06] text-center print:border-black/10">
+            <p className="text-[9px] text-white/30 leading-relaxed font-semibold print:text-black/45">
+              Harap simpan/screenshot tiket ini. Tunjukkan kepada petugas di gerbang masuk.<br />
+              <span className="text-[#FBBF24]">Satu tiket digital hanya berlaku untuk satu kali pemindaian.</span>
             </p>
           </div>
         </div>
       </div>
 
-      {/* Control Buttons */}
-      <div className="flex gap-4 print:hidden">
+      {/* Action buttons */}
+      <div className="grid grid-cols-3 gap-3 print:hidden">
+        <button
+          onClick={handleShare}
+          className="flex flex-col items-center justify-center gap-2 py-3.5 bg-white/[0.02] border border-white/[0.08] text-white/70 hover:text-white font-bold rounded-xl hover:bg-white/[0.05] hover:border-white/20 transition-all text-[10px] uppercase tracking-wider shadow-sm"
+        >
+          <Share2 className="w-4 h-4 text-[#F97316]" />
+          {copied ? "Disalin!" : "Bagikan"}
+        </button>
         <button
           onClick={handleDownload}
           disabled={!qrUrl}
-          className="flex-1 py-3 bg-white text-slate-700 border border-slate-200 font-bold rounded-xl hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 transition-colors text-sm flex items-center justify-center gap-2 shadow-sm"
+          className="flex flex-col items-center justify-center gap-2 py-3.5 bg-white/[0.02] border border-white/[0.08] text-white/70 hover:text-white font-bold rounded-xl hover:bg-white/[0.05] hover:border-white/20 disabled:opacity-40 transition-all text-[10px] uppercase tracking-wider shadow-sm"
         >
-          <Download className="w-4 h-4" /> Simpan QR
+          <Download className="w-4 h-4 text-[#FBBF24]" />
+          Unduh QR
         </button>
         <button
           onClick={handlePrint}
           disabled={!qrUrl}
-          className="flex-1 py-3 text-white font-bold rounded-xl hover:brightness-110 disabled:bg-slate-300 transition-colors text-sm flex items-center justify-center gap-2 shadow-lg"
-          style={{ backgroundColor: "#EA580C" }}
+          className="flex flex-col items-center justify-center gap-2 py-3.5 text-[#0C0A09] font-black rounded-xl disabled:opacity-40 transition-all text-[10px] uppercase tracking-wider shadow-md"
+          style={{ background: "linear-gradient(135deg, #FBBF24, #F97316)" }}
         >
-          <Printer className="w-4 h-4" /> Cetak Tiket
+          <Printer className="w-4 h-4" />
+          Cetak Tiket
         </button>
+      </div>
+
+      {/* Bottom navbar info */}
+      <div className="flex items-center justify-center gap-6 text-[10px] font-black uppercase tracking-wider text-white/30 print:hidden mt-2">
+        <Link href="/" className="flex items-center gap-1.5 hover:text-white transition-colors">
+          <Home className="w-3.5 h-3.5" />
+          Beranda
+        </Link>
+        <span className="text-white/10">|</span>
+        <Link href="/cek-qr" className="flex items-center gap-1.5 hover:text-white transition-colors">
+          <Ticket className="w-3.5 h-3.5" />
+          Cek Tiket Lain
+        </Link>
       </div>
     </div>
   );
@@ -185,12 +260,25 @@ function TicketContent() {
 
 export default function QRPage() {
   return (
-    <div className="min-h-screen bg-[#FFF8F2] text-[#111827] py-12 px-6 flex flex-col justify-center items-center">
+    <div className="min-h-screen bg-[#0C0A09] py-10 sm:py-16 px-4 flex flex-col justify-center items-center relative overflow-hidden">
+      <style jsx global>{`
+        .grain {
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+          opacity: 0.03;
+          mix-blend-mode: overlay;
+        }
+      `}</style>
+      <div className="absolute inset-0 grain pointer-events-none" />
+      <div className="absolute right-[-10%] top-[-10%] w-[300px] h-[300px] rounded-full blur-[100px] opacity-10 bg-orange-500" />
+      <div className="absolute left-[-10%] bottom-[-10%] w-[300px] h-[300px] rounded-full blur-[100px] opacity-10 bg-amber-500" />
+
       <Suspense
         fallback={
-          <div className="text-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#EA580C] mx-auto mb-4" />
-            <p className="text-sm text-slate-500 font-medium">Memuat data tiket...</p>
+          <div className="flex flex-col items-center gap-4 py-16 relative z-10">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-[#0C0A09] shadow-lg" style={{ background: "linear-gradient(135deg, #FBBF24, #F97316)" }}>
+              <RefreshCw className="w-6 h-6 animate-spin" />
+            </div>
+            <p className="text-xs text-white/40 font-bold uppercase tracking-wider">Memuat Tiket Anda...</p>
           </div>
         }
       >

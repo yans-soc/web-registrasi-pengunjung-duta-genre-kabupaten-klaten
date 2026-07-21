@@ -5,7 +5,6 @@ import { logActivity } from "@/lib/activityLogger";
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authenticate & check role (SUPER_ADMIN only)
     const token = req.cookies.get("token")?.value;
     if (!token) return NextResponse.json({ error: "Akses ditolak." }, { status: 401 });
 
@@ -14,10 +13,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Hanya Super Admin yang diizinkan." }, { status: 403 });
     }
 
-    // 2. Clear Visitor table
     const deleteCount = await prisma.visitor.deleteMany({});
 
-    // 3. Log Activity
     await logActivity(decoded.id, "RESET_DATA", `Melakukan reset data pengunjung. Menghapus ${deleteCount.count} data pengunjung.`);
 
     return NextResponse.json({

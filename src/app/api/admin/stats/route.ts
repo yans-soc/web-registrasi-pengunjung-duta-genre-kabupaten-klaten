@@ -4,7 +4,6 @@ import { verifyJWT } from "@/lib/jwt";
 
 export async function GET(req: NextRequest) {
   try {
-    // 1. Authenticate Admin
     const token = req.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json(
@@ -21,7 +20,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 2. Fetch Aggregated Statistics
     const totalCount = await prisma.visitor.count();
     const presentCount = await prisma.visitor.count({
       where: { status: "CHECKED_IN" },
@@ -30,7 +28,6 @@ export async function GET(req: NextRequest) {
       where: { status: "REGISTERED" },
     });
 
-    // 3. Fetch Recent Registered Visitors
     const recentRegistrations = await prisma.visitor.findMany({
       orderBy: { created_at: "desc" },
       take: 5,
@@ -43,7 +40,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // 4. Fetch Recent Check-ins
     const recentCheckIns = await prisma.visitor.findMany({
       where: { status: "CHECKED_IN" },
       orderBy: { checked_in_at: "desc" },
@@ -56,7 +52,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Remap for front-end compatibility
     const mappedRegistrations = recentRegistrations.map((r: any) => ({
       id: r.id,
       ticketCode: r.unique_code,

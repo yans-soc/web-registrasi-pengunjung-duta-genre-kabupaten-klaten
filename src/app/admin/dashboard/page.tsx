@@ -137,6 +137,12 @@ export default function AdminDashboard() {
             >
               <Scan className="w-3.5 h-3.5" /> Scan QR
             </Link>
+            <Link
+              href="/admin/sections"
+              className="px-5 py-2.5 bg-white/20 text-white text-xs font-black rounded-xl hover:bg-white/30 hover:shadow-lg transition-all uppercase tracking-wider flex items-center gap-1.5 border border-white/20"
+            >
+              Editor Section
+            </Link>
           </div>
         </div>
 

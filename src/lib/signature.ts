@@ -22,7 +22,6 @@ export function verifyTicketSignature(ticketCode: string, name: string, status: 
   }
 }
 
-// New: generate signature using unique_code & uuid
 export function generateQRPayloadSignature(visitorId: number, uniqueCode: string, status: string): string {
   const data = `${visitorId}:${uniqueCode}:${status}`;
   return crypto

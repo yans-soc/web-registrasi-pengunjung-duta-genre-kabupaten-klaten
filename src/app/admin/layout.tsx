@@ -14,14 +14,14 @@ import {
   X, 
   Shield, 
   Loader2,
-  Bell
+  Bell,
+  Layout
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // If we are on the login page, render without layout
   if (pathname === "/admin/login") {
     return <>{children}</>;
   }
@@ -39,10 +39,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const data = await res.json();
         if (res.ok && data.authenticated) {
           setAdmin(data.user);
-        } else {
-          // If auth check fails, redirect to login
-          router.push("/admin/login");
-        }
+          } else {
+            router.push("/admin/login");
+          }
       } catch (err) {
         console.error("Error fetching admin session:", err);
         router.push("/admin/login");
@@ -100,6 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "QR Scanner", href: "/admin/scanner", icon: Scan, role: "ALL" },
     { name: "Data Pengunjung", href: "/admin/visitors", icon: Users, role: "ALL" },
     { name: "Kelola Admin", href: "/admin/admins", icon: UserCog, role: "superadmin" },
+    { name: "Editor Section", href: "/admin/sections", icon: Layout, role: "superadmin" },
     { name: "Pengaturan & Logs", href: "/admin/settings", icon: Settings, role: "ALL" },
   ];
 

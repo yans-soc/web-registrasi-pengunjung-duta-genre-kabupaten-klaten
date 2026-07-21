@@ -1150,6 +1150,12 @@ export default function AdminSettings() {
                 <Layout className="w-4 h-4 text-[#EA580C]" />
                 Urutan Section Landing Page
               </h2>
+              <a
+                href="/admin/sections"
+                className="ml-auto px-3 py-1.5 bg-[#FFF8F2] hover:bg-[#FEEAD6] text-[#EA580C] text-[10px] font-black rounded-xl border border-[#EA580C]/20 transition-colors uppercase tracking-wider"
+              >
+                Buka Editor Visual →
+              </a>
               <p className="text-xs text-slate-500">
                 Ubah visibilitas, urutkan letak section di landing page dengan menaikkan/menurunkan posisi.
               </p>

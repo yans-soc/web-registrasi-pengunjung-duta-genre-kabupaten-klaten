@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// POST: batch reorder (body = array of { id, order }) OR single create
 export async function POST(req: NextRequest) {
   try {
     const admin = await getAdminFromRequest(req);
@@ -38,42 +39,110 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    if (Array.isArray(body)) {
+    // Support { updates: [...] } wrapper from handleReorderSection
+    const payload = body.updates ?? body;
+
+    if (Array.isArray(payload)) {
       // Batch update for reordering / visibility
-      for (const item of body) {
+      for (const item of payload) {
         const { id, order, isVisible, name, content } = item;
-        const stringContent = typeof content === "object" ? JSON.stringify(content) : content;
+        const stringContent =
+          content !== undefined
+            ? typeof content === "object"
+              ? JSON.stringify(content)
+              : content
+            : undefined;
+
         await prisma.customSection.update({
           where: { id },
           data: {
-            order: order !== undefined ? order : undefined,
-            isVisible: isVisible !== undefined ? isVisible : undefined,
-            name: name !== undefined ? name : undefined,
-            content: stringContent !== undefined ? stringContent : undefined,
+            ...(order !== undefined && { order }),
+            ...(isVisible !== undefined && { isVisible }),
+            ...(name !== undefined && { name }),
+            ...(stringContent !== undefined && { content: stringContent }),
           },
         });
       }
-      await logActivity(admin.id, "Mengurutkan / memperbarui seksi kustom", req.headers.get("x-forwarded-for") || "");
+      await logActivity(
+        admin.id,
+        "Mengurutkan / memperbarui seksi kustom",
+        req.headers.get("x-forwarded-for") || ""
+      );
       return NextResponse.json({ success: true, message: "Sections updated successfully" });
     } else {
-      // Individual section update
-      const { id, name, isVisible, order, content } = body;
-      if (!id) {
-        return NextResponse.json({ success: false, error: "ID is required" }, { status: 400 });
+      // Individual section create or update
+      const { id, name, isVisible, order, content } = payload;
+      const stringContent =
+        content !== undefined
+          ? typeof content === "object"
+            ? JSON.stringify(content)
+            : content
+          : undefined;
+
+      if (id) {
+        const updated = await prisma.customSection.update({
+          where: { id },
+          data: {
+            ...(name !== undefined && { name }),
+            ...(isVisible !== undefined && { isVisible }),
+            ...(order !== undefined && { order }),
+            ...(stringContent !== undefined && { content: stringContent }),
+          },
+        });
+        await logActivity(
+          admin.id,
+          `Memperbarui seksi kustom '${updated.name}'`,
+          req.headers.get("x-forwarded-for") || ""
+        );
+        return NextResponse.json({ success: true, section: updated });
       }
-      const stringContent = typeof content === "object" ? JSON.stringify(content) : content;
-      const updated = await prisma.customSection.update({
-        where: { id },
-        data: {
-          name,
-          isVisible,
-          order,
-          content: stringContent,
-        },
-      });
-      await logActivity(admin.id, `Memperbarui seksi kustom '${updated.name}'`, req.headers.get("x-forwarded-for") || "");
-      return NextResponse.json({ success: true, section: updated });
+
+      return NextResponse.json({ success: false, error: "ID is required" }, { status: 400 });
     }
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+// PUT: single section update (content, visibility, name, order)
+export async function PUT(req: NextRequest) {
+  try {
+    const admin = await getAdminFromRequest(req);
+    if (!admin) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { id, name, isVisible, order, content } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "ID is required" }, { status: 400 });
+    }
+
+    const stringContent =
+      content !== undefined
+        ? typeof content === "object"
+          ? JSON.stringify(content)
+          : content
+        : undefined;
+
+    const updated = await prisma.customSection.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(isVisible !== undefined && { isVisible }),
+        ...(order !== undefined && { order }),
+        ...(stringContent !== undefined && { content: stringContent }),
+      },
+    });
+
+    await logActivity(
+      admin.id,
+      `Memperbarui seksi kustom '${updated.name}'`,
+      req.headers.get("x-forwarded-for") || ""
+    );
+
+    return NextResponse.json({ success: true, section: updated });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
