@@ -19,7 +19,7 @@ fi
 
 # 3. Instalasi dependensi
 echo "Menginstall dependensi Node.js..."
-npm ci
+npm install --legacy-peer-deps
 
 # 4. Sinkronisasi Database (Prisma)
 echo "Sinkronisasi skema database dengan Prisma..."
