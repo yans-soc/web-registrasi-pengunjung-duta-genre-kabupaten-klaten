@@ -1,11 +1,17 @@
 import crypto from "crypto";
 
-const SIGNATURE_SECRET = process.env.SIGNATURE_SECRET || "klaten-duta-genre-signature-key-2026";
+function getSignatureSecret(): string {
+  const signatureSecret = process.env.SIGNATURE_SECRET;
+  if (!signatureSecret && (process.env.NODE_ENV === "production" || process.env.APP_ENV === "production" || process.env.APP_ENV === "staging")) {
+    throw new Error("SIGNATURE_SECRET is required in production/staging environments.");
+  }
+  return signatureSecret || "klaten-duta-genre-signature-key-2026";
+}
 
 export function generateTicketSignature(ticketCode: string, name: string, status: string): string {
   const data = `${ticketCode}:${name}:${status}`;
   return crypto
-    .createHmac("sha256", SIGNATURE_SECRET)
+    .createHmac("sha256", getSignatureSecret())
     .update(data)
     .digest("hex");
 }
@@ -25,7 +31,7 @@ export function verifyTicketSignature(ticketCode: string, name: string, status: 
 export function generateQRPayloadSignature(visitorId: number, uniqueCode: string, status: string): string {
   const data = `${visitorId}:${uniqueCode}:${status}`;
   return crypto
-    .createHmac("sha256", SIGNATURE_SECRET)
+    .createHmac("sha256", getSignatureSecret())
     .update(data)
     .digest("hex");
 }

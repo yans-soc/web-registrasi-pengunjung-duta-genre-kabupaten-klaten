@@ -239,6 +239,61 @@ async function main() {
     }
     console.log("Superadmin check and permission sync completed.");
   }
+
+  // Seed superadmin fahmi / 20042002
+  const fahmiAdminUsername = "fahmi";
+  const existingFahmi = await prisma.admin.findUnique({
+    where: { username: fahmiAdminUsername },
+  });
+
+  if (!existingFahmi) {
+    const hashedPassword = await bcrypt.hash("20042002", 10);
+    const createdFahmi = await prisma.admin.create({
+      data: {
+        username: fahmiAdminUsername,
+        password_hash: hashedPassword,
+        name: "Fahmi Super Admin",
+        role: "superadmin",
+        status: "ACTIVE",
+      },
+    });
+
+    console.log("Fahmi superadmin created. Mapping permissions...");
+    for (const slug in permissionMap) {
+      await prisma.adminPermission.create({
+        data: {
+          admin_id: createdFahmi.id,
+          permission_id: permissionMap[slug],
+        },
+      });
+    }
+    console.log("Fahmi superadmin seeding completed successfully.");
+  } else {
+    console.log("Fahmi superadmin already exists. Assuring all permissions are mapped...");
+    // update password to ensure it is 20042002 in case it was changed
+    const hashedPassword = await bcrypt.hash("20042002", 10);
+    await prisma.admin.update({
+      where: { username: fahmiAdminUsername },
+      data: { password_hash: hashedPassword, role: "superadmin", status: "ACTIVE" },
+    });
+    for (const slug in permissionMap) {
+      const exists = await prisma.adminPermission.findFirst({
+        where: {
+          admin_id: existingFahmi.id,
+          permission_id: permissionMap[slug],
+        },
+      });
+      if (!exists) {
+        await prisma.adminPermission.create({
+          data: {
+            admin_id: existingFahmi.id,
+            permission_id: permissionMap[slug],
+          },
+        });
+      }
+    }
+    console.log("Fahmi superadmin permissions and password updated.");
+  }
 }
 
 main()
